@@ -1,4 +1,4 @@
-#!/bin/env node
+#!/usr/bin/env node
 /// <reference path="../globals.d.ts" />
 
 import {generateRemoteVersion, generateRemoteVersionAndSave} from "./index";

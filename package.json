@@ -1,6 +1,6 @@
 {
 	"name": "@gongt/make-next-private-version",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "auto make private package version for script usage",
 	"main": "dist/index.js",
 	"bin": {
