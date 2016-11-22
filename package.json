@@ -1,12 +1,11 @@
 {
-	"name": "@microduino-private/make-private-version",
+	"name": "@gongt/make-next-private-version",
 	"version": "1.0.0",
-	"description": "auto make private version",
+	"description": "auto make private package version for script usage",
 	"main": "dist/index.js",
 	"bin": {
 		"make-private-version": "dist/bin.js"
 	},
-	"private": true,
 	"preferGlobal": true,
 	"scripts": {
 		"start": "tsc -p src -w",
