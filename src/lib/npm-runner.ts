@@ -1,6 +1,7 @@
 import {spawnSync} from "child_process";
 export class NpmRunner {
 	private npmCommand: string[] = [];
+	static globalArgs: string[] = [];
 	
 	constructor(npmCommand: string[], private cwd: string) {
 		if (npmCommand[0] === 'npm') {
@@ -11,7 +12,7 @@ export class NpmRunner {
 	
 	private spawn(args: string[]) {
 		console.error('run npm: \n\tcmd= %s\n\targs= %s\n\tcwd= %s', this.npmCommand, args, this.cwd);
-		const r = spawnSync('npm', [...this.npmCommand, ...args], {
+		const r = spawnSync('npm', [...NpmRunner.globalArgs, ...this.npmCommand, ...args], {
 			encoding: 'utf-8',
 			cwd: this.cwd,
 			env: Object.assign({}, process.env, {LANG: 'C'}),
@@ -61,4 +62,8 @@ export class NpmRunner {
 	pack() {
 		return this.text(['pack']);
 	}
+}
+
+export function setGlobalParams(args: string[]) {
+	NpmRunner.globalArgs = args;
 }

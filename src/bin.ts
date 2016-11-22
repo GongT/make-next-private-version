@@ -1,21 +1,14 @@
 #!/usr/bin/env node
 /// <reference path="../globals.d.ts" />
 
-import {generateRemoteVersion, generateRemoteVersionAndSave} from "./index";
+import {generateRemoteVersionAndSave} from "./index";
+import {setGlobalParams} from "./lib/npm-runner";
 
-const save = process.argv.indexOf('--save') > 0 || process.argv.indexOf('-s') > 0;
-if (save) {
-	if (process.argv.indexOf('--save') > 0) {
-		process.argv.splice(process.argv.indexOf('--save'), 1);
-	} else {
-		process.argv.splice(process.argv.indexOf('-s'), 1);
-	}
+const args = process.argv.slice(2);
+const packagPath = args.pop();
+if (!packagPath) {
+	throw new Error('require a param');
 }
 
-if (process.argv.length > 2) {
-	if (save) {
-		generateRemoteVersionAndSave(process.argv[2]);
-	} else {
-		console.log(generateRemoteVersion(process.argv[2]));
-	}
-}
+setGlobalParams(args);
+generateRemoteVersionAndSave(packagPath);

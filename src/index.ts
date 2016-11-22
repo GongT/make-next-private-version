@@ -8,6 +8,8 @@ import {inc as increseVersion, prerelease, major, minor, patch} from "semver";
 import {resolve} from "path";
 import {sha1HashFile} from "./lib/sha1";
 
+export {setGlobalParams} from "./lib/npm-runner";
+
 export function generateRemoteVersion(packagePath: string) {
 	const {name, version: localVersion, path} = readPackage(packagePath);
 	
