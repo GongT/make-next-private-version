@@ -1,4 +1,4 @@
-import {spawnSync} from "child_process";
+import {spawn} from "child_process";
 export class NpmRunner {
 	private npmCommand: string[] = [];
 	static globalArgs: string[] = [];
@@ -10,49 +10,57 @@ export class NpmRunner {
 		this.npmCommand = npmCommand;
 	}
 	
-	private spawn(args: string[]) {
+	private spawn(args: string[]): Promise<string> {
 		console.error('run npm: \n\tcmd= %s\n\targs= %s\n\tcwd= %s', this.npmCommand, args, this.cwd);
-		const r = spawnSync('npm', [...NpmRunner.globalArgs, ...this.npmCommand, ...args], {
-			encoding: 'utf-8',
+		console.error('this may take long time.');
+		const r = spawn('npm', [...NpmRunner.globalArgs, ...this.npmCommand, ...args], {
 			cwd: this.cwd,
 			env: Object.assign({}, process.env, {LANG: 'C'}),
 			stdio: ['ignore', 'pipe', 'pipe'],
 		});
-		if (r.error) {
-			console.error('fail to start process');
-			throw r.error;
-		}
-		if (r.status !== 0) {
-			const stderr = r.stderr.toString();
-			if (/no such package/.test(stderr)) {
-				throw new Error('no such package');
-			}
+		let out: string = '';
+		let err: string = '';
+		r.stdout.on('data', function (buff: Buffer) {
+			out += buff.toString();
+		});
+		r.stderr.on('data', function (buff: Buffer) {
+			err += buff.toString();
+		});
+		r.stdout.pipe(process.stdout);
+		r.stderr.pipe(process.stderr);
+		
+		return new Promise((resolve, reject) => {
+			const wrappedCallback = (err, data) => err? reject(err) : resolve(data);
 			
-			delete r['envPairs'];
-			delete r['options'];
-			console.error(r.stderr);
-			throw new Error('npm run failed unknown error.');
-		}
-		return r;
+			r.on('close', function (status) {
+				if (status === 0) {
+					resolve(out);
+				} else {
+					if (/no such package/.test(err)) {
+						reject(new Error('no such package'));
+					}
+					
+					console.error(err);
+					reject(new Error('npm run failed unknown error.'));
+				}
+			});
+		});
 	}
 	
-	private json(args: string[]): any {
-		const r = this.spawn(args);
-		const out = r.stdout.toString().trim();
+	private async json(args: string[]): Promise<any> {
+		const output = await this.spawn(args);
 		
+		let ret;
 		try {
-			let ret;
-			eval(`ret = ${out};`);
-			return ret;
+			eval(`ret = ${output};`);
 		} catch (e) {
-			console.error(out);
 			throw e;
 		}
+		return ret;
 	}
 	
-	private text(args: string[]): string {
-		const r = this.spawn(args);
-		return r.stdout.toString().trim();
+	private async text(args: string[]): Promise<string> {
+		return await this.spawn(args);
 	}
 	
 	view(...args: string[]) {
@@ -61,6 +69,10 @@ export class NpmRunner {
 	
 	pack() {
 		return this.text(['pack']);
+	}
+	
+	install(name: string) {
+		return this.text(['install', name]);
 	}
 }
 

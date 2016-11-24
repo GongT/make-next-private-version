@@ -2,7 +2,7 @@
 	"compileOnSave": true,
 	"compilerOptions": {
 		"module": "commonjs",
-		"target": "es5",
+		"target": "es2015",
 		"lib": ["es6", "dom", "es7"],
 		"moduleResolution": "node",
 		"noEmitOnError": true,
@@ -17,7 +17,6 @@
 		"pretty": true,
 		"sourceMap": true,
 		"baseUrl": "./",
-		"typeRoots": ["../node_modules/@types"],
 		"types": [],
 		"outDir": "../dist",
 		"rootDir": "./"

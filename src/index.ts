@@ -1,16 +1,18 @@
 /// <reference path="../globals.d.ts" />
 
-import "json-env-data/global";
+import "@gongt/jenv-data/global";
 import "source-map-support/register";
 import {readPackage, replacePackage} from "./lib/package.json";
 import {NpmRunner} from "./lib/npm-runner";
 import {inc as increseVersion, prerelease, major, minor, patch} from "semver";
 import {resolve} from "path";
+import {mkdirSync, existsSync} from "fs";
+import {sync} from "rimraf";
 import {sha1HashFile} from "./lib/sha1";
 
 export {setGlobalParams} from "./lib/npm-runner";
 
-export function generateRemoteVersion(packagePath: string) {
+export async function generateRemoteVersion(packagePath: string) {
 	const {name, version: localVersion, path} = readPackage(packagePath);
 	
 	const npmConfig = JsonEnv.gfw.npmRegistry;
@@ -18,9 +20,27 @@ export function generateRemoteVersion(packagePath: string) {
 	const npmCommand = ['npm', '--registry', npmConfig.url];
 	const npm = new NpmRunner(npmCommand, path);
 	
+	const testingDir = '/tmp/mnpv';
+	try {
+		if (existsSync(testingDir)) {
+			sync(testingDir);
+			mkdirSync(testingDir);
+		} else {
+			mkdirSync(testingDir);
+		}
+		const npmInst = new NpmRunner(npmCommand, testingDir);
+		const text = await npmInst.install(name);
+		console.log(text);
+	} catch (e) {
+		console.log(e);
+	} finally {
+		sync(testingDir);
+	}
+	process.exit(123);
+	
 	let remoteVersion, remoteHash;
 	try {
-		const remote = npm.view(name);
+		const remote = await npm.view(name);
 		remoteHash = remote.dist.shasum;
 		remoteVersion = remote.version;
 	} catch (e) {
@@ -38,7 +58,7 @@ export function generateRemoteVersion(packagePath: string) {
 	let changed = false, createdVersion;
 	console.error('version compare:\n\tlocal  =%s\n\tremote =%s', localVersion, remoteVersion);
 	if (remoteVersion === localVersion || baseVersion(remoteVersion) === baseVersion(localVersion)) {
-		const packageName = npm.pack();
+		const packageName = await npm.pack();
 		const packageLocation = resolve(path, packageName);
 		const localHash = sha1HashFile(packageLocation);
 		
@@ -66,9 +86,9 @@ export function generateRemoteVersion(packagePath: string) {
 	return newVersion;
 }
 
-export function generateRemoteVersionAndSave(packagePath: string) {
+export async function generateRemoteVersionAndSave(packagePath: string) {
 	const {version: oldVersion} = readPackage(packagePath);
-	const newVersion = generateRemoteVersion(packagePath);
+	const newVersion = await generateRemoteVersion(packagePath);
 	
 	if (newVersion) {
 		replacePackage(packagePath, newVersion);
