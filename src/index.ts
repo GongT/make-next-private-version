@@ -28,15 +28,14 @@ export async function generateRemoteVersion(packagePath: string) {
 		} else {
 			mkdirSync(testingDir);
 		}
-		const npmInst = new NpmRunner(npmCommand, testingDir);
-		const text = await npmInst.install(name);
-		console.log(text);
+		// const npmInst = new NpmRunner(npmCommand, testingDir);
+		// const text = await npmInst.install(name);
+		// console.log(text);
 	} catch (e) {
 		console.log(e);
 	} finally {
 		sync(testingDir);
 	}
-	process.exit(123);
 	
 	let remoteVersion, remoteHash;
 	try {

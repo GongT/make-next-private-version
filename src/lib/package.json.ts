@@ -34,5 +34,6 @@ export function replacePackage(path: string, newVersion: string) {
 	
 	str = str.replace(/"version"\s*:\s*".+?"/, `"version": "${newVersion}"`);
 	
+	console.error('updateing version field in package.json');
 	return writeFileSync(path, str, 'utf-8');
 }

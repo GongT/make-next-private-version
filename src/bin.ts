@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 /// <reference path="../globals.d.ts" />
-
 import {generateRemoteVersionAndSave} from "./index";
 import {setGlobalParams} from "./lib/npm-runner";
 
@@ -11,4 +10,6 @@ if (!packagPath) {
 }
 
 setGlobalParams(args);
-generateRemoteVersionAndSave(packagPath);
+generateRemoteVersionAndSave(packagPath).catch((e) => {
+	console.error(e.message);
+});

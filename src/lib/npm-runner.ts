@@ -13,6 +13,7 @@ export class NpmRunner {
 	private spawn(args: string[]): Promise<string> {
 		console.error('run npm: \n\tcmd= %s\n\targs= %s\n\tcwd= %s', this.npmCommand, args, this.cwd);
 		console.error('this may take long time.');
+		console.error('\x1B[2m');
 		const r = spawn('npm', [...NpmRunner.globalArgs, ...this.npmCommand, ...args], {
 			cwd: this.cwd,
 			env: Object.assign({}, process.env, {LANG: 'C'}),
@@ -30,9 +31,8 @@ export class NpmRunner {
 		r.stderr.pipe(process.stderr);
 		
 		return new Promise((resolve, reject) => {
-			const wrappedCallback = (err, data) => err? reject(err) : resolve(data);
-			
 			r.on('close', function (status) {
+				console.error('\x1B[0m');
 				if (status === 0) {
 					resolve(out);
 				} else {
