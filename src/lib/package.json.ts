@@ -13,7 +13,7 @@ export function readPackage(path: string) {
 	
 	const {name, version}:PackageJson = require(path);
 	const folder = dirname(path);
-	
+	console.log('local package (%s) version is %s', name, version);
 	return {name, version, path: folder};
 }
 

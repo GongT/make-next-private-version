@@ -10,6 +10,15 @@ if (!packagPath) {
 }
 
 setGlobalParams(args);
-generateRemoteVersionAndSave(packagPath).catch((e) => {
+generateRemoteVersionAndSave(packagPath).then((changed) => {
+	if (changed) {
+		console.log('generated new package version !');
+		process.exit(0);
+	} else {
+		console.log('use old package version !');
+		process.exit(100);
+	}
+}).catch((e) => {
 	console.error(e.message);
+	process.exit(1);
 });

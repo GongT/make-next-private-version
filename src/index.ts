@@ -1,5 +1,3 @@
-/// <reference path="../globals.d.ts" />
-
 import "@gongt/jenv-data/global";
 import "source-map-support/register";
 import {readPackage, replacePackage} from "./lib/package.json";
@@ -7,7 +5,7 @@ import {NpmRunner} from "./lib/npm-runner";
 import {inc as increseVersion, prerelease, major, minor, patch} from "semver";
 import {resolve} from "path";
 import {mkdirSync, existsSync} from "fs";
-import {sync} from "rimraf";
+import {sync as rmdirSync} from "rimraf";
 import {sha1HashFile} from "./lib/sha1";
 
 export {setGlobalParams} from "./lib/npm-runner";
@@ -23,7 +21,7 @@ export async function generateRemoteVersion(packagePath: string) {
 	const testingDir = '/tmp/mnpv';
 	try {
 		if (existsSync(testingDir)) {
-			sync(testingDir);
+			rmdirSync(testingDir);
 			mkdirSync(testingDir);
 		} else {
 			mkdirSync(testingDir);
@@ -34,7 +32,7 @@ export async function generateRemoteVersion(packagePath: string) {
 	} catch (e) {
 		console.log(e);
 	} finally {
-		sync(testingDir);
+		rmdirSync(testingDir);
 	}
 	
 	let remoteVersion, remoteHash;
@@ -42,8 +40,10 @@ export async function generateRemoteVersion(packagePath: string) {
 		const remote = await npm.view(name);
 		remoteHash = remote.dist.shasum;
 		remoteVersion = remote.version;
+		console.log('there is remote package.\n\tversion=%s\n\tshasum=%s', remoteVersion, remoteHash);
 	} catch (e) {
 		if (e.message === 'no such package') {
+			console.log('there is no remote package. set local version: %s', localVersion);
 			remoteVersion = localVersion;
 			remoteHash = '';
 			if (!localVersion) {
@@ -55,13 +55,14 @@ export async function generateRemoteVersion(packagePath: string) {
 	}
 	
 	let changed = false, createdVersion;
-	console.error('version compare:\n\tlocal  =%s\n\tremote =%s', localVersion, remoteVersion);
+	console.log('version compare:\n\tlocal  =%s\n\tremote =%s', localVersion, remoteVersion);
 	if (remoteVersion === localVersion || baseVersion(remoteVersion) === baseVersion(localVersion)) {
 		const packageName = await npm.pack();
-		const packageLocation = resolve(path, packageName);
+		await sleep(1);
+		const packageLocation = resolve(path, packageName.trim());
 		const localHash = sha1HashFile(packageLocation);
 		
-		console.error('hash compare:\n\tlocal  =%s\n\tremote =%s', localHash, remoteHash);
+		console.log('hash compare:\n\tlocal  =%s\n\tremote =%s', localHash, remoteHash);
 		if (localHash !== remoteHash) {
 			changed = true;
 			createdVersion = remoteVersion;
@@ -72,7 +73,7 @@ export async function generateRemoteVersion(packagePath: string) {
 	}
 	
 	if (!changed) {
-		console.error('same version');
+		console.log('same version');
 		return '';
 	}
 	
@@ -81,22 +82,26 @@ export async function generateRemoteVersion(packagePath: string) {
 	}
 	
 	const newVersion = increseVersion(createdVersion, 'prerelease');
-	console.error('generated remote version is: %s', newVersion);
+	console.log('generated remote version is: %s', newVersion);
 	return newVersion;
 }
 
 export async function generateRemoteVersionAndSave(packagePath: string) {
-	const {version: oldVersion} = readPackage(packagePath);
 	const newVersion = await generateRemoteVersion(packagePath);
 	
 	if (newVersion) {
 		replacePackage(packagePath, newVersion);
-		process.exit(0);
-	} else {
-		process.exit(100);
+		return true;
 	}
+	
+	return false;
 }
 
 function baseVersion(vString) {
 	return `${major(vString)}.${minor(vString)}.${patch(vString)}`;
+}
+function sleep(sec) {
+	return new Promise((resolve, reject) => {
+		setTimeout(resolve, sec * 1000);
+	});
 }
