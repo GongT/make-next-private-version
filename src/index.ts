@@ -1,4 +1,3 @@
-import "@gongt/jenv-data/global";
 import "source-map-support/register";
 import {readPackage, replacePackage} from "./lib/package.json";
 import {NpmRunner} from "./lib/npm-runner";
