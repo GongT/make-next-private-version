@@ -13,9 +13,8 @@ export {setGlobalParams} from "./lib/npm-runner";
 export async function generateRemoteVersion(packagePath: string) {
 	const {name, version: localVersion, path} = readPackage(packagePath);
 	
-	const npmConfig = JsonEnv.gfw.npmRegistry;
-	
-	const npmCommand = ['npm', '--registry', npmConfig.url];
+	const npmCommand = ['npm'];
+	// '--registry' xxxxx
 	const npm = new NpmRunner(npmCommand, path);
 	
 	const testingDir = '/tmp/mnpv';
