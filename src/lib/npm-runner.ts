@@ -11,7 +11,11 @@ export class NpmRunner {
 	}
 	
 	private spawn(args: string[]): Promise<string> {
-		console.error('run npm: \n\tcmd= %s\n\targs= %s\n\tcwd= %s', this.npmCommand, args, this.cwd);
+		console.error('run npm: \n\tcmd= npm %s\n\targs= %s\n\tcwd= %s',
+			this.npmCommand.concat(args),
+			NpmRunner.globalArgs.join(' '),
+			this.cwd
+		);
 		console.error('this may take long time.');
 		console.error('\x1B[2m');
 		const r = spawn('npm', [...NpmRunner.globalArgs, ...this.npmCommand, ...args], {

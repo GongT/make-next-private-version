@@ -55,8 +55,13 @@ export async function generateRemoteVersion(packagePath: string) {
 	let changed = false, createdVersion;
 	console.log('version compare:\n\tlocal  =%s\n\tremote =%s', localVersion, remoteVersion);
 	if (remoteVersion === localVersion || baseVersion(remoteVersion) === baseVersion(localVersion)) {
+		const oldversion = replacePackage(packagePath, remoteVersion, true);
+		
 		const packageName = await npm.pack();
 		await sleep(1);
+		
+		replacePackage(packagePath, oldversion, true);
+		
 		const packageLocation = resolve(path, packageName.trim());
 		const localHash = sha1HashFile(packageLocation);
 		

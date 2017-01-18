@@ -4,7 +4,8 @@
 	"description": "auto make private package version for script usage",
 	"main": "dist/index.js",
 	"bin": {
-		"make-private-version": "dist/bin.js"
+		"make-private-version": "dist/bin.js",
+		"make-private-version-restore": "dist/restore.js"
 	},
 	"preferGlobal": true,
 	"scripts": {
