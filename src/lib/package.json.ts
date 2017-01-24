@@ -47,8 +47,8 @@ export function replacePackage(path: string, newVersion: string, doNotTouch = fa
 	if (detectGit(path)) {
 		pkg.backupVersion = pkg.backupVersion || pkg.version;
 		console.error(' backup version: %s', pkg.backupVersion);
-		pkg.version = newVersion;
 	}
+	pkg.version = newVersion;
 	
 	console.error('updating version field (to %s) in package.json', newVersion);
 	write(path, pkg, doNotTouch);
